@@ -1,0 +1,14 @@
+# Ignorer tous les fichiers et dossiers
+*
+
+# Autoriser le fichier .gitignore
+!.gitignore
+
+# Autoriser l'accès au dossier du script
+!EBDM_mental_effort/
+
+# Ignorer tout le contenu de ce dossier
+EBDM_mental_effort/*
+
+# Garder uniquement ce fichier Python
+!EBDM_mental_effort/tache_cognitif_park.py

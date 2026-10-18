@@ -609,22 +609,6 @@ for Block in range(1):  #10
             congruence = ladder_values[trial][4]
             correct_resp = ladder_values[trial][5]
 
-            # total, incent = monetary_incentive(triall, correct_resp, keys, incentives, correct_respponse)
-
-            # # Load the image stimulus
-            # image_path = get_image_path(incentives)
-            # print(f"Loading image from: {image_path}")
-            # try:
-            #     image_stim = visual.ImageStim(
-            #         win=win,
-            #         image=image_path,
-            #         pos=(-10, 5.5),
-            #         size=(3, 2)
-            #         )
-            #     image_stim.draw()
-            # except Exception as e:
-            #     print(f"Error loading image: {e}")
-
             current_position1 += 1
             if correct_resp in keys:
                 print(f"Round {round_number + 1}: Trial {trial + 1}: Correct response!")
@@ -671,20 +655,6 @@ for Block in range(1):  #10
 
             lignes_serie.append(ligne)
 
-        # win.flip()
-        # core.wait(0,5)
-
-        # feedback = visual.TextStim(
-        #     win,
-        #     text=f"Votre total est : {total:.2f} euros\n\nVous avez gagné : {incent:.2f} euros."
-        #     )
-        # feedback.draw()
-        # core.wait(3.5)
-        # #end of a trial aka 10 comparaison
-        # win.flip()
-        # core.wait(2)
-        # Fin des comparaisons : calcul du gain de la série
-
         gain_serie = incentives * (correct_respponse / 10)
         total += gain_serie
         
@@ -700,16 +670,6 @@ for Block in range(1):  #10
             "terminee"
         )
 
-        # # Ajouter les résultats de la série à chaque ligne
-        # with open(running_filename, "a") as f_handle:
-
-        #     for ligne in lignes_serie:
-
-        #         ligne.extend([correct_respponse, gain_serie, total, trial_duration])
-
-        #         data_container.append(ligne)
-
-        #         f_handle.write(",".join(str(valeur) for valeur in ligne) + "\n")
 
         feedback = visual.TextStim(
             win,
@@ -721,21 +681,6 @@ for Block in range(1):  #10
         afficher_pendant(feedback, 3.5)
 
         afficher_ecran_vide(0.5)
-
-        # gain_serie = incentives * (correct_respponse / 10)  # pas sur
-        # total += gain_serie
-
-        # feedback = visual.TextStim(
-        #     win,
-        #     text=f"Vous avez gagné : {gain_serie:.2f} euros\n"
-        #         f"Total : {total:.2f} euros",
-        #     color='white'
-        # )
-
-        # afficher_pendant(feedback, 3.5)
-
-        # afficher_ecran_vide(0.5)
-
 
 try:
     win.flip()
