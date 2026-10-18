@@ -64,19 +64,169 @@ folder.mkdir(parents=True, exist_ok=True)
 
 # Experiment info dialog
 expName = "Exp_parkinson_motivation"
+
+# expInfo = {
+#     "id_participant": "",
+#     "age": "",
+#     "sexe": ["Homme", "Femme"],
+#     "groupe": ["Contrôle", "Parkinson"],
+# }
+# dlg = gui.DlgFromDict(
+#     dictionary=expInfo, title=expName, order=["id_participant", "age", "sexe", "groupe"]
+# )
+
+
 expInfo = {
     "id_participant": "",
     "age": "",
     "sexe": ["Homme", "Femme"],
     "groupe": ["Contrôle", "Parkinson"],
+
+    "largeur_cm": "34",   # Largeur par défaut, modifiable
+    "distance_cm": "70",  # Distance par défaut, modifiable
 }
+
+# ========== NOUVEAU FORMULAIRE EBDM ==========
+
+# expInfo = {
+#     "id_participant": "",
+#     "age": "",
+#     "sexe": ["Homme", "Femme"],
+#     "groupe": ["Contrôle", "Parkinson"],
+
+#     # Taille de l'écran (menu déroulant)
+#     "taille_ecran": [
+
+#         "13,3 pouces",
+#         "14 pouces",
+#         "15,6 pouces",
+#         "17,3 pouces",
+#         "24 pouces",
+#         "27 pouces",
+#         "Autre",
+#     ],
+
+#     # À remplir uniquement si "Autre"
+#     "largeur_autre_cm": "",
+
+#     # Distance modifiable, 70 cm par défaut
+#     "distance_cm": "70",
+# }
+
+# dlg = gui.DlgFromDict(
+#     dictionary=expInfo,
+#     title=expName,
+#     order=[
+#         "id_participant",
+#         "age",
+#         "sexe",
+#         "groupe",
+#         "taille_ecran",
+#         "largeur_autre_cm",
+#         "distance_cm",
+#     ],
+#     show=False,  # NOUVEAU : ne pas afficher immédiatement
+# )
+
 dlg = gui.DlgFromDict(
-    dictionary=expInfo, title=expName, order=["id_participant", "age", "sexe", "groupe"]
+    dictionary=expInfo,
+    title=expName,
+    order=[
+        "id_participant",
+        "age",
+        "sexe",
+        "groupe",
+        "largeur_cm",
+        "distance_cm",
+    ],
 )
+
+# ========== FIN NOUVEAU FORMULAIRE ==========
+
+# ========== NOUVEAU : VERROUILLAGE DU CHAMP LARGEUR ==========
+
+# # Récupérer les deux champs du formulaire
+# choix_ecran = dlg.inputFields[
+#     dlg.inputFieldNames.index("taille_ecran")
+# ]
+
+# champ_largeur = dlg.inputFields[
+#     dlg.inputFieldNames.index("largeur_autre_cm")
+# ]
+
+# # Activer le champ uniquement si "Autre" est sélectionné
+# def verifier_taille(taille):
+#     champ_largeur.setEnabled(taille == "Autre")
+
+# # Vérifier automatiquement à chaque changement du menu
+# choix_ecran.currentTextChanged.connect(verifier_taille)
+
+# # Appliquer la règle dès l'ouverture
+# verifier_taille(choix_ecran.currentText())
+
+# # Afficher le formulaire
+# dlg.show()
+
+# ========== FIN NOUVEAU ==========
+
+
 if not dlg.OK:
     core.quit()
-date_exp = data.getDateStr()
 
+# ========== PARAMETRES ECRAN : NOUVEAU ==========
+
+# Récupérer les paramètres saisis dans le formulaire
+LARGEUR_CM = float(str(expInfo["largeur_cm"]).replace(",", "."))
+DISTANCE_CM = float(str(expInfo["distance_cm"]).replace(",", "."))
+
+# Vérifier les valeurs
+if LARGEUR_CM <= 0 or DISTANCE_CM <= 0:
+    raise ValueError("Largeur et distance doivent être positives.")
+
+
+# # Largeurs approximatives en cm, pour les écrans 16:9
+# largeurs_ecrans = {
+#     "13,3 pouces": 29.4,
+#     "14 pouces": 31.0,
+#     "15,6 pouces": 34.5,
+#     "17,3 pouces": 38.3,
+#     "24 pouces": 53.1,
+#     "27 pouces": 59.8,
+# }
+
+# try:
+#     # Récupérer la largeur selon le choix du formulaire
+#     if expInfo["taille_ecran"] == "Autre":
+#         LARGEUR_CM = float(
+#             str(expInfo["largeur_autre_cm"]).replace(",", ".")
+#         )
+#     else:
+#         LARGEUR_CM = largeurs_ecrans[expInfo["taille_ecran"]]
+
+#     # Récupérer la distance saisie
+#     DISTANCE_CM = float(
+#         str(expInfo["distance_cm"]).replace(",", ".")
+#     )
+
+#     # Vérifier les valeurs
+#     if LARGEUR_CM <= 0 or DISTANCE_CM <= 0:
+#         raise ValueError
+
+# except ValueError:
+#     erreur = gui.Dlg(title="Erreur de configuration")
+#     erreur.addText(
+#         "Vérifiez la largeur et la distance : "
+#         "les valeurs doivent être des nombres positifs en cm."
+#     )
+#     erreur.show()
+#     core.quit()
+
+print(f"Largeur de l'écran : {LARGEUR_CM} cm")
+print(f"Distance yeux-écran : {DISTANCE_CM} cm")
+
+# ========== FIN PARAMETRES ECRAN ==========    
+
+date_exp = data.getDateStr()
 # File save
 filename = expName + "_s" + expInfo["id_participant"] + "_" + date_exp
 running_filename = os.path.join(folder, filename + "_resultats.csv")
@@ -98,22 +248,27 @@ with open(running_filename, "w", encoding="utf-8", newline="") as f_handle:
 subject_id = int(expInfo["id_participant"])
 
 # Window configuration
-# mon = monitors.Monitor('default', width=29, distance=70.0)
-# win = visual.Window(fullscr=True, monitor=mon, size=(1280, 720), color=[0, 0, 0], colorSpace='rgb255', units='deg')
 
 mon = monitors.Monitor("monMoniteur")
-mon.setWidth(34.5)  # largeur de l'écran en cm (à mesurer !)
-mon.setDistance(57)  # distance yeux-écran en cm
-mon.setSizePix((1920, 1080))  # résolution réelle de l'écran
+# mon.setWidth(34.5)  # largeur de l'écran en cm (à mesurer )
+# mon.setDistance(70)  # distance yeux-écran en cm
+# mon.setSizePix((1920, 1080))  # résolution réelle de l'écran
+
+# NOUVEAUX PARAMETRES (récupérés depuis le formulaire)
+mon.setWidth(LARGEUR_CM)
+mon.setDistance(DISTANCE_CM)
 
 win = visual.Window(
     fullscr=True,
     monitor=mon,
-    size=(1920, 1080),
+    # size=(1920, 1080),
     color=[0, 0, 0],
     colorSpace="rgb255",
-    units="deg",
+    units="pix",
 )
+RESOLUTION = tuple(int(x) for x in win.size)
+mon.setSizePix(RESOLUTION)
+win.units = "deg"
 
 
 # Image stimulus paths
@@ -125,13 +280,6 @@ image_paths = {
     5: r"5EURO.jpeg",
     20: r"IMAGE20EUROS.jpeg",
 }
-
-# Function to get the image path based on the incentive
-# def get_image_path(incentive):  #Mais il faudra vérifier que les fichiers existent réellement et que le programme les affiche au bon moment.
-#     path = image_paths.get(incentive, "path/to/default/image.png")
-#     if path == "path/to/default/image.png":
-#         print(f"Warning: Image path for incentive {incentive} not found. Using default image.")
-#     return path
 
 
 def get_image_path(incentive):
@@ -176,13 +324,6 @@ instructions_2 = visual.TextStim(
     **instruc_dict,
     text="Devant vous, une échelle apparaîtra avec deux chiffres différents et de tailles différentes à chaque niveau, un de chaque côté. Vous devez choisir le chiffre ayant la plus grande valeur, et un point montera sur l'échelle si vous donnez la bonne réponse",
 )
-# instructions_3 = visual.TextStim(
-#     **instruc_dict, text=u"il existe 2 typed d'essais : \
-#     Gain : chaque réponse correcte sera récompensée en fonction de l'incitation monétaire associée à l'essai, représentée par un point vert sur l'échelle \
-#     Perte : chaque réponse correcte vous permet de conserver l'argent déjà gagné, représenté par un point rouge sur l'échelle.\
-#     le type d'essai sera choisi aléatoirement pour chaque essai.\
-#     le point jaune représente votre position actuelle sur l'échelle.")
-
 instructions_3 = visual.TextStim(
     **instruc_dict,
     text=(
@@ -194,7 +335,6 @@ instructions_3 = visual.TextStim(
         "et le point jaune votre progression."
     ),
 )
-
 instructions_4 = visual.TextStim(
     **instruc_dict,
     text="Nous commencerons par une phase d'entraînement pour vous familiariser avec la tâche.\
@@ -202,8 +342,9 @@ instructions_4 = visual.TextStim(
 )
 instructions_5 = visual.TextStim(
     **instruc_dict,
-    text="Pour commencer l'expérience principale, appuyez sur la barre d'espace. \
-                                 Bonne chance !",
+    text=("Pour commencer l'expérience principale, appuyez sur la barre d'espace.\n"
+                                 "Bonne chance !"
+        ),
 )
 fin = visual.TextStim(**instruc_dict, text="Fin de l'expérience .\
                       Merci d'avoir participé !")
@@ -211,25 +352,6 @@ fin = visual.TextStim(**instruc_dict, text="Fin de l'expérience .\
 # -------------------------------------------------------------------------------------------------------------------------------------------
 # ----------------------------------------------------Functions------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------------------------------------------------------------------
-
-# supprimer
-# # Function to determine monetary incentive
-# def monetary_incentive(triall, correct_resp, keys, incentive, correct_respponse):
-#     global total
-#     incent = 0
-#     if triall == 'gain' and correct_resp in keys:
-#         # total += incentive*(correct_respponse/10)
-#         incent += incentive*(correct_respponse/10)
-#         print(f"Added {incentive} to total. New total: {total}")
-#     elif triall == 'loss' and correct_resp not in keys:
-#         # total -= incentive*(1-correct_respponse/10)
-#         incent += incentive*(1-correct_respponse/10)
-#         if total < 0:
-#             total = 0
-#         print(f"Subtracted {incentive} from total. New total: {total}")
-#     return total, incent
-
-
 # Generate ladder values
 def generate_ladder_values(num_steps, Block_type):
     nombres = list(range(1, 10))
@@ -254,7 +376,6 @@ def generate_ladder_values(num_steps, Block_type):
     random.shuffle(trials)
     return trials
 
-
 def instruction_exp(instruction, touchIs):  # barre espaceinstruction 5
     kb_delay = 0
     win.callOnFlip(resp.clearEvents, eventType="keyboard")
@@ -274,8 +395,6 @@ def instruction_exp(instruction, touchIs):  # barre espaceinstruction 5
 
 
 # Function to draw the ladder with digits and participant position
-
-
 def draw_ladder(
     win, trials, current_position, current_position1, colors
 ):  # Il existe cependant un point à examiner : draw_ladder() affiche les dix paires de chiffres de la série, et pas uniquement la paire à laquelle le participant doit répondre. Il faudra déterminer si c'est conforme à la présentation expérimentale prévue. Cela peut avoir une influence sur les possibilités d'anticipation.
@@ -317,7 +436,7 @@ def draw_ladder(
     )  # moves up when answer is right
     participant_position.draw()
     participant_position1 = visual.Circle(
-        win, radius=0.08, pos=(1, -3.6 + current_position1 * 0.8), fillColor="yellow"
+        win, radius=0.08, pos=(1, -3.6 + current_position1 * 0.8), fillColor="red" #yellow
     )  # indicate participant position (it moves up when an answer is made)
     participant_position1.draw()
     print("Drawing participant position at:", (0, -0.9 + current_position * 0.1))
@@ -493,7 +612,7 @@ total = 0
 
 # main experiment loop
 
-for Block in range(1):  #10
+for Block in range(2):  #10
     # valence condition (loss or win)
     Block_type = "gain"
     recompenses_bloc = monetary_incentives.copy()
