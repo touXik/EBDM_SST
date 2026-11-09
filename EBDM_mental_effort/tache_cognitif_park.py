@@ -28,7 +28,7 @@ Response trigger
 | 101              | Correct left response        |
 | 103              | Correct right response       |
 """
-
+import sys
 import csv
 from pathlib import Path
 from psychopy import core, data, event, visual, gui, monitors
@@ -54,7 +54,12 @@ total = 0
 # File save path
 BASE_DIR = Path(__file__).resolve().parent
 
-folder = BASE_DIR / "./data"
+
+# sauvegarder à côté du .exe
+if getattr(sys, "frozen", False):
+    folder = Path(sys.executable).resolve().parent / "data"
+else:
+    folder = BASE_DIR / "data"
 
 folder.mkdir(parents=True, exist_ok=True)
 
@@ -65,68 +70,14 @@ folder.mkdir(parents=True, exist_ok=True)
 # Experiment info dialog
 expName = "Exp_parkinson_motivation"
 
-# expInfo = {
-#     "id_participant": "",
-#     "age": "",
-#     "sexe": ["Homme", "Femme"],
-#     "groupe": ["Contrôle", "Parkinson"],
-# }
-# dlg = gui.DlgFromDict(
-#     dictionary=expInfo, title=expName, order=["id_participant", "age", "sexe", "groupe"]
-# )
-
-
 expInfo = {
     "id_participant": "",
     "age": "",
     "sexe": ["Homme", "Femme"],
-    "groupe": ["Contrôle", "Parkinson"],
-
-    "largeur_cm": "34",   # Largeur par défaut, modifiable
-    "distance_cm": "70",  # Distance par défaut, modifiable
+    "groupe": ["Parkinson","Controle"],
+    "largeur_cm": "34",  # Largeur par défaut, modifiable
+    "distance_cm": "90",  # Distance par défaut, modifiable
 }
-
-# ========== NOUVEAU FORMULAIRE EBDM ==========
-
-# expInfo = {
-#     "id_participant": "",
-#     "age": "",
-#     "sexe": ["Homme", "Femme"],
-#     "groupe": ["Contrôle", "Parkinson"],
-
-#     # Taille de l'écran (menu déroulant)
-#     "taille_ecran": [
-
-#         "13,3 pouces",
-#         "14 pouces",
-#         "15,6 pouces",
-#         "17,3 pouces",
-#         "24 pouces",
-#         "27 pouces",
-#         "Autre",
-#     ],
-
-#     # À remplir uniquement si "Autre"
-#     "largeur_autre_cm": "",
-
-#     # Distance modifiable, 70 cm par défaut
-#     "distance_cm": "70",
-# }
-
-# dlg = gui.DlgFromDict(
-#     dictionary=expInfo,
-#     title=expName,
-#     order=[
-#         "id_participant",
-#         "age",
-#         "sexe",
-#         "groupe",
-#         "taille_ecran",
-#         "largeur_autre_cm",
-#         "distance_cm",
-#     ],
-#     show=False,  # NOUVEAU : ne pas afficher immédiatement
-# )
 
 dlg = gui.DlgFromDict(
     dictionary=expInfo,
@@ -141,39 +92,10 @@ dlg = gui.DlgFromDict(
     ],
 )
 
-# ========== FIN NOUVEAU FORMULAIRE ==========
-
-# ========== NOUVEAU : VERROUILLAGE DU CHAMP LARGEUR ==========
-
-# # Récupérer les deux champs du formulaire
-# choix_ecran = dlg.inputFields[
-#     dlg.inputFieldNames.index("taille_ecran")
-# ]
-
-# champ_largeur = dlg.inputFields[
-#     dlg.inputFieldNames.index("largeur_autre_cm")
-# ]
-
-# # Activer le champ uniquement si "Autre" est sélectionné
-# def verifier_taille(taille):
-#     champ_largeur.setEnabled(taille == "Autre")
-
-# # Vérifier automatiquement à chaque changement du menu
-# choix_ecran.currentTextChanged.connect(verifier_taille)
-
-# # Appliquer la règle dès l'ouverture
-# verifier_taille(choix_ecran.currentText())
-
-# # Afficher le formulaire
-# dlg.show()
-
-# ========== FIN NOUVEAU ==========
-
 
 if not dlg.OK:
     core.quit()
 
-# ========== PARAMETRES ECRAN : NOUVEAU ==========
 
 # Récupérer les paramètres saisis dans le formulaire
 LARGEUR_CM = float(str(expInfo["largeur_cm"]).replace(",", "."))
@@ -184,47 +106,10 @@ if LARGEUR_CM <= 0 or DISTANCE_CM <= 0:
     raise ValueError("Largeur et distance doivent être positives.")
 
 
-# # Largeurs approximatives en cm, pour les écrans 16:9
-# largeurs_ecrans = {
-#     "13,3 pouces": 29.4,
-#     "14 pouces": 31.0,
-#     "15,6 pouces": 34.5,
-#     "17,3 pouces": 38.3,
-#     "24 pouces": 53.1,
-#     "27 pouces": 59.8,
-# }
-
-# try:
-#     # Récupérer la largeur selon le choix du formulaire
-#     if expInfo["taille_ecran"] == "Autre":
-#         LARGEUR_CM = float(
-#             str(expInfo["largeur_autre_cm"]).replace(",", ".")
-#         )
-#     else:
-#         LARGEUR_CM = largeurs_ecrans[expInfo["taille_ecran"]]
-
-#     # Récupérer la distance saisie
-#     DISTANCE_CM = float(
-#         str(expInfo["distance_cm"]).replace(",", ".")
-#     )
-
-#     # Vérifier les valeurs
-#     if LARGEUR_CM <= 0 or DISTANCE_CM <= 0:
-#         raise ValueError
-
-# except ValueError:
-#     erreur = gui.Dlg(title="Erreur de configuration")
-#     erreur.addText(
-#         "Vérifiez la largeur et la distance : "
-#         "les valeurs doivent être des nombres positifs en cm."
-#     )
-#     erreur.show()
-#     core.quit()
-
 print(f"Largeur de l'écran : {LARGEUR_CM} cm")
 print(f"Distance yeux-écran : {DISTANCE_CM} cm")
 
-# ========== FIN PARAMETRES ECRAN ==========    
+# ========== FIN PARAMETRES ECRAN ==========
 
 date_exp = data.getDateStr()
 # File save
@@ -239,7 +124,9 @@ output = (
     "congruence,correct_resp,reponse,acc,rt_ms,trigg_resp,"
     "recompense_proposee,bonnes_reponses_serie,"
     "gain_serie,total_cumule,trial_duration_s,"
-    "nb_reponses_serie,statut_serie\n"
+    "nb_reponses_serie,statut_serie,"
+    "age,sexe,groupe,largeur_cm,distance_cm,"
+    "resolution_largeur_px,resolution_hauteur_px\n"
 )
 
 with open(running_filename, "w", encoding="utf-8", newline="") as f_handle:
@@ -332,49 +219,72 @@ instructions_3 = visual.TextStim(
         "Plus vous réussissez de comparaisons, "
         "plus votre gain peut être élevé.\n"
         "Le point vert indique vos bonnes réponses "
-        "et le point jaune votre progression."
+        "et le point rouge votre progression."
     ),
 )
 instructions_4 = visual.TextStim(
     **instruc_dict,
-    text="Nous commencerons par une phase d'entraînement pour vous familiariser avec la tâche.\
-                                 Répondez le plus rapidement possible à chaque essai.",
+    text=("Nous commencerons par une phase d'entraînement pour vous familiariser avec la tâche.\n"
+                                 "Répondez le plus rapidement possible à chaque essai."),
 )
 instructions_5 = visual.TextStim(
     **instruc_dict,
-    text=("Pour commencer l'expérience principale, appuyez sur la barre d'espace.\n"
-                                 "Bonne chance !"
-        ),
+    text=(
+        "Pour commencer l'expérience principale, appuyez sur la barre d'espace.\n"
+        "Bonne chance !"
+    ),
 )
-fin = visual.TextStim(**instruc_dict, text="Fin de l'expérience .\
-                      Merci d'avoir participé !")
+fin = visual.TextStim(
+    **instruc_dict,
+    text=("Fin de l'expérience .\n" "Merci d'avoir participé !"),
+)
+
 
 # -------------------------------------------------------------------------------------------------------------------------------------------
 # ----------------------------------------------------Functions------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------------------------------------------------------------------
-# Generate ladder values
 def generate_ladder_values(num_steps, Block_type):
+
     nombres = list(range(1, 10))
-    tailles = [0.5, 1]
     trials = []
 
-    for _ in range(num_steps):
-        n1, n2 = random.sample(
-            nombres, 2
-        )  # Cela permet de tirer des chiffres distincts et deux tailles différentes. Mais cela ne garantit pas exactement 50 % de comparaisons congruentes et 50 % d'incongruentes dans chaque série.
-        taille1, taille2 = random.sample(
-            tailles, 2
-        )  # Il faudra vérifier si cet équilibre est exigé par le protocole.
+    # Vérifier que le nombre de comparaisons est pair
+    if num_steps % 2 != 0:
+        raise ValueError("Le nombre de comparaisons doit être pair.")
+
+    # Garantir 50 % de chaque condition
+    conditions = ["Congruent"] * (num_steps // 2) + ["Incongruent"] * (num_steps // 2)
+
+    for congruence in conditions:
+
+        # Choisir deux chiffres différents
+        n1, n2 = random.sample(nombres, 2)
+
+        # Adapter les tailles à la condition souhaitée
+        if congruence == "Congruent":
+
+            if n1 > n2:
+                taille1, taille2 = 1, 0.5
+            else:
+                taille1, taille2 = 0.5, 1
+
+        else:  # Incongruent
+
+            if n1 > n2:
+                taille1, taille2 = 0.5, 1
+            else:
+                taille1, taille2 = 1, 0.5
+
+        # Bonne réponse selon la valeur numérique
         correct_resp = touchIs[0] if n1 > n2 else touchIs[1]
-        congruence = (
-            "Congruent"
-            if taille1 > taille2 and n1 > n2 or taille1 < taille2 and n1 < n2
-            else "Incongruent"
-        )
+
         trials.append((n1, taille1, n2, taille2, congruence, correct_resp, Block_type))
 
+    # Mélanger l'ordre des dix comparaisons
     random.shuffle(trials)
+
     return trials
+
 
 def instruction_exp(instruction, touchIs):  # barre espaceinstruction 5
     kb_delay = 0
@@ -391,14 +301,13 @@ def instruction_exp(instruction, touchIs):  # barre espaceinstruction 5
         if not kb_delay:
             kb_delay = 1
     win.flip()
-    core.wait(1)
+    afficher_ecran_vide(1)
 
 
 # Function to draw the ladder with digits and participant position
-def draw_ladder(
-    win, trials, current_position, current_position1, colors
-):  # Il existe cependant un point à examiner : draw_ladder() affiche les dix paires de chiffres de la série, et pas uniquement la paire à laquelle le participant doit répondre. Il faudra déterminer si c'est conforme à la présentation expérimentale prévue. Cela peut avoir une influence sur les possibilités d'anticipation.
+def draw_ladder(win, trials, current_position, current_position1, colors):
     z = -3.6
+    stimuli_jauge = []
     print("Starting to draw ladder...")
     print("Current position:", current_position)
 
@@ -409,6 +318,7 @@ def draw_ladder(
             win, width=3.2, height=0.2, pos=(0, z), fillColor="white"
         )
         rectangle.draw()
+        stimuli_jauge.append(rectangle)
         left_text = visual.TextStim(
             win, text=str(n1), pos=(-2.4, z + 0.2), color="white", height=taille1
         )
@@ -417,6 +327,7 @@ def draw_ladder(
         )
         left_text.draw()
         right_text.draw()
+        stimuli_jauge.extend((left_text, right_text))
         print(
             f"Drawing trial {i}: n1={n1}, taille1={taille1}, n2={n2}, taille2={taille2}, z={z}"
         )
@@ -426,21 +337,30 @@ def draw_ladder(
         win, width=0.08, height=9.4, pos=(-1.6, 1), fillColor="white"
     )
     left_rectangle.draw()
+    stimuli_jauge.append(left_rectangle)
     right_rectangle = visual.Rect(
         win, width=0.08, height=9.4, pos=(1.6, 1), fillColor="white"
     )
     right_rectangle.draw()
+    stimuli_jauge.append(right_rectangle)
 
+#0.08
     participant_position = visual.Circle(
         win, radius=0.08, pos=(0, -3.6 + current_position * 0.8), fillColor=colors
     )  # moves up when answer is right
     participant_position.draw()
+    stimuli_jauge.append(participant_position)
     participant_position1 = visual.Circle(
-        win, radius=0.08, pos=(1, -3.6 + current_position1 * 0.8), fillColor="red" #yellow
+        win,
+        radius=0.08,
+        pos=(1, -3.6 + current_position1 * 0.8),
+        fillColor="red",  
     )  # indicate participant position (it moves up when an answer is made)
     participant_position1.draw()
+    stimuli_jauge.append(participant_position1)
     print("Drawing participant position at:", (0, -0.9 + current_position * 0.1))
     win.flip()
+    return stimuli_jauge
 
 
 def afficher_pendant(stimulus, duree):
@@ -475,21 +395,14 @@ def afficher_ecran_vide(duree):
         win.flip()
 
 
-
-
 def sauvegarder_serie(
-    lignes, bloc, serie, recompense,
-    bonnes, gain, total_cumule, duree, statut
+    lignes, bloc, serie, recompense, bonnes, gain, total_cumule, duree, statut
 ):
     # Si aucune réponse, créer une ligne sans comparaison
     if lignes:
         a_ecrire = lignes
     else:
-        ligne_vide = (
-            [subject_id, bloc + 1, serie + 1]
-            + [""] * 11
-            + [recompense]
-        )
+        ligne_vide = [subject_id, bloc + 1, serie + 1] + [""] * 11 + [recompense]
         a_ecrire = [ligne_vide]
 
     with open(running_filename, "a", newline="", encoding="utf-8") as f:
@@ -497,20 +410,28 @@ def sauvegarder_serie(
 
         for ligne in a_ecrire:
             writer.writerow(
-                ligne + [
+                ligne
+                + [
                     bonnes,
                     gain,
                     total_cumule,
                     duree,
                     len(lignes),
-                    statut
+                    statut,
+                    expInfo["age"],
+                    expInfo["sexe"],
+                    expInfo["groupe"],
+                    LARGEUR_CM,
+                    DISTANCE_CM,
+                    RESOLUTION[0],
+                    RESOLUTION[1],
                 ]
             )
+
 
 # -------------------------------------------------------------------------------------------------------------------------------------------
 # ------------------------------------------------------Calibration phase-------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------------------------------
-
 try:
     instruction_exp(instructions_1, touchIs)
     instruction_exp(instructions_2, touchIs)
@@ -545,14 +466,17 @@ for round_number in range(num_rounds):
             print(f"Error: Unexpected trial structure: {ladder_values[trial]}")
             continue  # Skip this iteration if it's invalid
 
-        colors = "blue"
+        colors = "green"
 
         # Effacer les anciennes touches avant la comparaison
         event.clearEvents(eventType="keyboard")
         win.callOnFlip(event.clearEvents, eventType="keyboard")
 
         # Afficher la jauge et les chiffres
-        draw_ladder(win, ladder_values, current_position, current_position1, colors)
+
+        stimuli_jauge = draw_ladder(
+            win, ladder_values, current_position, current_position1, colors
+        )
 
         keys = []
 
@@ -566,6 +490,11 @@ for round_number in range(num_rounds):
 
             if keys:
                 break  # Break the loop if any key is pressed
+
+            for stimulus in stimuli_jauge:
+                stimulus.draw()
+            win.flip()
+
         if not keys:
             print("No response detected. Moving to next trial.")
 
@@ -582,7 +511,7 @@ for round_number in range(num_rounds):
     calibration.append(elapsed_time)
 
     win.flip()
-    core.wait(2)
+    afficher_ecran_vide(2)
 
 # Check if calibration is empty
 if calibration:
@@ -604,7 +533,7 @@ except Exception as e:
 
 print("ESPACE OK - Début de l'expérience principale", flush=True)
 
-num_rounds = 2  #6
+num_rounds = 6  # 6
 rectangle_number = 10
 data_container = []
 total = 0
@@ -612,7 +541,7 @@ total = 0
 
 # main experiment loop
 
-for Block in range(2):  #10
+for Block in range(10):  # 10
     # valence condition (loss or win)
     Block_type = "gain"
     recompenses_bloc = monetary_incentives.copy()
@@ -625,6 +554,9 @@ for Block in range(2):  #10
         current_position1 = 0
         ladder_values = generate_ladder_values(rectangle_number, Block_type)
         print(ladder_values)
+
+        print("Congruentes :", sum(t[4] == "Congruent" for t in ladder_values))
+        print("Incongruentes :", sum(t[4] == "Incongruent" for t in ladder_values))
 
         incentives = recompenses_bloc[round_number]
         image_path = get_image_path(incentives)
@@ -668,17 +600,16 @@ for Block in range(2):  #10
             if trial == 0:
                 win.callOnFlip(timer.reset)
 
-            draw_ladder(win, ladder_values, current_position, current_position1, colors)
-
+            stimuli_jauge = draw_ladder(
+                win, ladder_values, current_position, current_position1, colors
+            )
             keys = []
             rt = None
 
             while timer.getTime() < trial_duration:
 
                 appuis = kb_reponses.getKeys(
-                    keyList=["left", "right", "escape"],
-                    waitRelease=False,
-                    clear=True
+                    keyList=["left", "right", "escape"], waitRelease=False, clear=True
                 )
 
                 for appui in appuis:
@@ -697,7 +628,7 @@ for Block in range(2):  #10
                             "",
                             total,
                             trial_duration,
-                            "interrompue"
+                            "interrompue",
                         )
 
                         win.close()
@@ -712,8 +643,10 @@ for Block in range(2):  #10
 
                 if keys:
                     break
-                
-                core.wait(0.005, hogCPUperiod=0)
+                for stimulus in stimuli_jauge:
+                    stimulus.draw()
+                win.flip()
+                # core.wait(0.005, hogCPUperiod=0)
 
             if not keys:
                 print("Temps écoulé ou aucune réponse.")
@@ -773,10 +706,42 @@ for Block in range(2):  #10
             ]
 
             lignes_serie.append(ligne)
+            # Pénalité temporelle après une réponse incorrecte
+            if acc == 0:
+                # Actualiser la jauge et bloquer la progression
+                stimuli_penalite = draw_ladder(
+                    win, ladder_values, current_position, current_position1, colors
+                )
+
+                # Pénalité = 10 % de la durée individuelle
+                fin_penalite = min(
+                    timer.getTime() + 0.10 * trial_duration,
+                    trial_duration
+                )
+
+                while timer.getTime() < fin_penalite:
+
+                    # Autoriser Échap pendant la pénalité
+                    if kb_reponses.getKeys(
+                        keyList=["escape"], waitRelease=False, clear=True
+                    ):
+                        sauvegarder_serie(
+                            lignes_serie, Block, round_number,
+                            incentives, correct_respponse,
+                            "", total, trial_duration, "interrompue"
+                        )
+                        win.close()
+                        core.quit()
+
+                    # Maintenir la jauge affichée à chaque frame
+                    for stimulus in stimuli_penalite:
+                        stimulus.draw()
+                    win.flip()
+
 
         gain_serie = incentives * (correct_respponse / 10)
         total += gain_serie
-        
+
         sauvegarder_serie(
             lignes_serie,
             Block,
@@ -786,9 +751,8 @@ for Block in range(2):  #10
             gain_serie,
             total,
             trial_duration,
-            "terminee"
+            "terminee",
         )
-
 
         feedback = visual.TextStim(
             win,
@@ -802,16 +766,9 @@ for Block in range(2):  #10
         afficher_ecran_vide(0.5)
 
 try:
-    win.flip()
-    fin.draw()
-    win.flip()
-    core.wait(4)
+    afficher_pendant(fin, 4)
 finally:
     # Close PsychoPy properly
     print("Closing experiment properly...")
     win.close()
     core.quit()
-
-
-# End of experiment
-# [X]
